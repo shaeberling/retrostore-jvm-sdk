@@ -47,8 +47,6 @@ public class UrlFetcherImpl implements UrlFetcher {
 
   @Override
   public byte[] fetchUrl(String url, Object obj) throws IOException {
-    String param = (new Gson().toJson(obj)).toString();
-    System.out.printf("%s -> %s\n", param, url);
     return fetchUrl(url, (new Gson().toJson(obj)).getBytes());
   }
 }
