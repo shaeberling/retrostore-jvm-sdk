@@ -200,7 +200,7 @@ public class RetrostoreClientImpl implements RetrostoreClient {
   }
 
   @Override
-  public int uploadState(SystemState state) throws ApiException {
+  public long uploadState(SystemState state) throws ApiException {
     UploadSystemStateParams params = UploadSystemStateParams.newBuilder().setState(state).build();
     String url = String.format(mServerUrl, "uploadState");
 
@@ -218,7 +218,7 @@ public class RetrostoreClientImpl implements RetrostoreClient {
   }
 
   @Override
-  public SystemState downloadState(int token) throws ApiException {
+  public SystemState downloadState(long token) throws ApiException {
     DownloadSystemStateParams params = DownloadSystemStateParams.newBuilder().setToken(token).build();
     String url = String.format(mServerUrl, "downloadState");
 

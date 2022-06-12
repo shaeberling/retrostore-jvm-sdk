@@ -38,7 +38,7 @@ message ApiResponseUploadSystemState {
     // An optional (error) message, human-readable.
     string message = 2;
     // The token referring to the just uploaded state.
-    int32 token = 3;
+    int64 token = 3;
 }
 
 // A RetroStore app item.
@@ -161,5 +161,5 @@ message UploadSystemStateParams {
 
 // API Params
 message DownloadSystemStateParams {
-    int32 token = 1;
+    int64 token = 1;
 }

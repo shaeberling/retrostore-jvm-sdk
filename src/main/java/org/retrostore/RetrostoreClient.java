@@ -66,8 +66,9 @@ public interface RetrostoreClient {
    *
    * @return A unique token that can be used to fetch this state later.
    */
-  int uploadState(SystemState state) throws ApiException;
+  long uploadState(SystemState state) throws ApiException;
 
-  /** Fetches a system state associated with the given token. */
-  SystemState downloadState(int token) throws ApiException;
+  /** Fetches a system state associated with the given token.
+   * @param token*/
+  SystemState downloadState(long token) throws ApiException;
 }

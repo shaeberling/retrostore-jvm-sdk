@@ -307,7 +307,7 @@ public class TestCli {
       addRandomTestData(state);
 
       SystemState buildState = state.build();
-      int token = retrostore.uploadState(buildState);
+      long token = retrostore.uploadState(buildState);
       System.out.printf("Uploaded test state and got token '%d'\n", token);
 
       if (token <= 0) {
