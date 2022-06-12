@@ -129,15 +129,12 @@ public class RetrostoreClientImpl implements RetrostoreClient {
       hasMediaTypes = new HashSet<>();
     }
 
-    List<String> mediaTypes = hasMediaTypes.stream().map(Enum::name).collect(Collectors.toList());
-    ListAppsParams.Trs80Params trs80Params = ListAppsParams.Trs80Params.newBuilder().addAllMediaTypes(mediaTypes).build();
-
     return fetchAppsInternal(
         ListAppsParams.newBuilder()
             .setStart(start)
             .setNum(num)
             .setQuery(searchQuery)
-            .setTrs80(trs80Params)
+            .setTrs80(ListAppsParams.Trs80Params.newBuilder().addAllMediaTypes(hasMediaTypes))
             .build());
   }
 

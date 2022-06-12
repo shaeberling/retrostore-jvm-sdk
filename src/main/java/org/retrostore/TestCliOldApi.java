@@ -43,7 +43,7 @@ public class TestCliOldApi {
     RetrostoreClientImpl retrostore =
         RetrostoreClientImpl.get("n/a", "https://retrostore.org/api/%s",
             false);
-    if (args.length > 1 && args[0].toLowerCase().equals("--search")) {
+    if (args.length > 1 && args[0].equalsIgnoreCase("--search")) {
       StringBuilder query = new StringBuilder();
       for (int i = 1; i < args.length; ++i) {
         query.append(args[i]).append(" ");
@@ -55,12 +55,18 @@ public class TestCliOldApi {
     System.out.println("Testing the RetroStoreClient.");
     int success = 0;
     for (RetroStoreApiTest test : tests) {
-      if (test.runTest(retrostore)) {
-        success++;
-        System.out.println("TEST PASSED: " + test.getClass().getSimpleName());
-        System.out.println("=========================================");
-      } else {
+      try {
+        if (test.runTest(retrostore)) {
+          success++;
+          System.out.println("TEST PASSED: " + test.getClass().getSimpleName());
+          System.out.println("=========================================");
+        } else {
+          System.out.println("TEST FAILED: " + test.getClass().getSimpleName());
+          System.out.println("=========================================");
+        }
+      } catch (Exception ex) {
         System.out.println("TEST FAILED: " + test.getClass().getSimpleName());
+        System.out.println("Exception: " + ex.getMessage());
         System.out.println("=========================================");
       }
     }
@@ -235,6 +241,10 @@ public class TestCliOldApi {
         // Thrown when start is out of range.
       }
       System.out.println(". Done");
+      if (appNames.isEmpty()) {
+        System.err.println("No apps fetched");
+        return false;
+      }
 
       // Ensure that the order is correct throughout the whole list.
       for (int i = 1; i < appNames.size(); ++i) {

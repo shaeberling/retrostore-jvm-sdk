@@ -48,7 +48,7 @@ public class TestCli {
     RetrostoreClientImpl retrostore =
         RetrostoreClientImpl.get("n/a", "https://retrostore.org/api/%s",
             false);
-    if (args.length > 1 && args[0].toLowerCase().equals("--search")) {
+    if (args.length > 1 && args[0].equalsIgnoreCase("--search")) {
       StringBuilder query = new StringBuilder();
       for (int i = 1; i < args.length; ++i) {
         query.append(args[i]).append(" ");
@@ -73,7 +73,6 @@ public class TestCli {
         System.out.println("TEST FAILED: " + test.getClass().getSimpleName());
         System.out.println("Exception: " + ex.getMessage());
         System.out.println("=========================================");
-
       }
     }
     System.out.println("*****************************************");
@@ -114,7 +113,7 @@ public class TestCli {
       // TODO: We should use a non-existent test model to test these without interfering with real
       // data.
       ImmutableSet<MediaType> mediaTypes = ImmutableSet.of(type);
-      List<App> apps = retrostore.fetchApps(0, 50, null, mediaTypes);
+      List<App> apps = retrostore.fetchApps(0, 50, "", mediaTypes);
       for (App app : apps) {
         System.out.printf(
             "App %s (%s) has image of type %s.%n", app.getName(), app.getId(), type.name());

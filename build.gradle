@@ -61,7 +61,7 @@ clean {
 }
 
 
-version = '0.2.1'
+version = '0.2.2'
 group = 'org.retrostore'
 
 jar {
@@ -100,16 +100,3 @@ publishing {
     }
   }
 }
-
-
-
-/*uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: "file://localhost/tmp/myRepo/")
-            pom {
-                artifactId = "retrostore-client"
-            }
-        }
-    }
-}*/

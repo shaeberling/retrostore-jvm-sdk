@@ -150,7 +150,7 @@ message ListAppsParams {
     Trs80Params trs80 = 4;
 
     message Trs80Params {
-        repeated string media_types = 1;
+        repeated MediaType media_types = 1;
     }
 }
 
