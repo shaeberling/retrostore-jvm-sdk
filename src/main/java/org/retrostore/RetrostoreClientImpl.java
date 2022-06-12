@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class RetrostoreClientImpl implements RetrostoreClient {
   private static final String DEFAULT_SERVER_URL = "https://retrostore.org/api/%s";
@@ -128,7 +129,7 @@ public class RetrostoreClientImpl implements RetrostoreClient {
       hasMediaTypes = new HashSet<>();
     }
 
-    List<String> mediaTypes = hasMediaTypes.stream().map(Enum::name).toList();
+    List<String> mediaTypes = hasMediaTypes.stream().map(Enum::name).collect(Collectors.toList());
     ListAppsParams.Trs80Params trs80Params = ListAppsParams.Trs80Params.newBuilder().addAllMediaTypes(mediaTypes).build();
 
     return fetchAppsInternal(
