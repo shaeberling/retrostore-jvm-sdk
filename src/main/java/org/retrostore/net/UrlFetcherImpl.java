@@ -18,6 +18,7 @@ package org.retrostore.net;
 
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
+import com.google.protobuf.GeneratedMessageLite;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,7 +47,16 @@ public class UrlFetcherImpl implements UrlFetcher {
   }
 
   @Override
+  public byte[] fetchUrl(String url, GeneratedMessageLite<?, ?> obj) throws IOException {
+    return fetchUrl(url, obj.toByteArray());
+  }
+
+  @Override
+  @Deprecated
   public byte[] fetchUrl(String url, Object obj) throws IOException {
+    if (obj instanceof GeneratedMessageLite) {
+      return fetchUrl(url, (GeneratedMessageLite<?, ?>) obj);
+    }
     return fetchUrl(url, (new Gson().toJson(obj)).getBytes());
   }
 }

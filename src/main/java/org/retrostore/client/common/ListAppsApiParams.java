@@ -26,6 +26,7 @@ import java.util.List;
  * 100% in the JSON sent to the server. So change this with care. You might create
  * incompatibilities with older clients.
  */
+@Deprecated
 public class ListAppsApiParams {
   /** Start index of the first item to return. */
   public final int start;

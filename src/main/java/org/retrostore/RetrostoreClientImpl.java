@@ -18,7 +18,6 @@ package org.retrostore;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import org.retrostore.client.common.DownloadSystemStateApiParams;
 import org.retrostore.client.common.FetchMediaImagesApiParams;
 import org.retrostore.client.common.GetAppApiParams;
 import org.retrostore.client.common.ListAppsApiParams;
@@ -27,9 +26,14 @@ import org.retrostore.client.common.proto.ApiResponseDownloadSystemState;
 import org.retrostore.client.common.proto.ApiResponseMediaImages;
 import org.retrostore.client.common.proto.ApiResponseUploadSystemState;
 import org.retrostore.client.common.proto.App;
+import org.retrostore.client.common.proto.DownloadSystemStateParams;
+import org.retrostore.client.common.proto.FetchMediaImagesParams;
+import org.retrostore.client.common.proto.GetAppParams;
+import org.retrostore.client.common.proto.ListAppsParams;
 import org.retrostore.client.common.proto.MediaImage;
 import org.retrostore.client.common.proto.MediaType;
 import org.retrostore.client.common.proto.SystemState;
+import org.retrostore.client.common.proto.UploadSystemStateParams;
 import org.retrostore.net.UrlFetcher;
 import org.retrostore.net.UrlFetcherImpl;
 
@@ -76,7 +80,17 @@ public class RetrostoreClientImpl implements RetrostoreClient {
   @Override
   public App getApp(String appId) throws ApiException {
     Preconditions.checkArgument(!Strings.isNullOrEmpty(appId), "appId missing.");
-    GetAppApiParams params = new GetAppApiParams(appId);
+    return getAppInternal(GetAppParams.newBuilder().setAppId(appId).build());
+  }
+
+  /** Note: Testing legacy JSON code path for older clients. */
+  @Deprecated
+  App getAppOld(String appId) throws ApiException {
+    Preconditions.checkArgument(!Strings.isNullOrEmpty(appId), "appId missing.");
+    return getAppInternal(new GetAppApiParams(appId));
+  }
+
+  private App getAppInternal(Object params) throws ApiException {
     String url = String.format(mServerUrl, "getApp");
     try {
       byte[] content = mUrlFetcher.fetchUrl(url, params);
@@ -98,7 +112,13 @@ public class RetrostoreClientImpl implements RetrostoreClient {
 
   @Override
   public List<App> fetchApps(int start, int num) throws ApiException {
-    return fetchApps(new ListAppsApiParams(start, num));
+    return fetchAppsInternal(ListAppsParams.newBuilder().setStart(start).setNum(num).build());
+  }
+
+  /** Note: Testing legacy JSON code path for older clients. */
+  @Deprecated
+  List<App> fetchAppsOld(int start, int num) throws ApiException {
+    return fetchAppsInternal(new ListAppsApiParams(start, num));
   }
 
   @Override
@@ -107,14 +127,35 @@ public class RetrostoreClientImpl implements RetrostoreClient {
     if (hasMediaTypes == null) {
       hasMediaTypes = new HashSet<>();
     }
+
+    List<String> mediaTypes = hasMediaTypes.stream().map(Enum::name).toList();
+    ListAppsParams.Trs80Params trs80Params = ListAppsParams.Trs80Params.newBuilder().addAllMediaTypes(mediaTypes).build();
+
+    return fetchAppsInternal(
+        ListAppsParams.newBuilder()
+            .setStart(start)
+            .setNum(num)
+            .setQuery(searchQuery)
+            .setTrs80(trs80Params)
+            .build());
+  }
+
+
+  /** Note: Testing legacy JSON code path for older clients. */
+  @Deprecated
+  List<App> fetchAppsOld(int start, int num, String searchQuery, Set<MediaType> hasMediaTypes)
+      throws ApiException {
+    if (hasMediaTypes == null) {
+      hasMediaTypes = new HashSet<>();
+    }
     List<String> mediaTypes = new ArrayList<>(hasMediaTypes.size());
     for (MediaType mediaType : hasMediaTypes) {
       mediaTypes.add(mediaType.name());
     }
-    return fetchApps(new ListAppsApiParams(start, num, searchQuery, mediaTypes));
+    return fetchAppsInternal(new ListAppsApiParams(start, num, searchQuery, mediaTypes));
   }
 
-  private List<App> fetchApps(ListAppsApiParams params) throws ApiException {
+  private List<App> fetchAppsInternal(Object params) throws ApiException {
     String url = String.format(mServerUrl, "listApps");
     try {
       byte[] content = mUrlFetcher.fetchUrl(url, params);
@@ -132,7 +173,16 @@ public class RetrostoreClientImpl implements RetrostoreClient {
 
   @Override
   public List<MediaImage> fetchMediaImages(String appId) throws ApiException {
-    FetchMediaImagesApiParams params = new FetchMediaImagesApiParams(appId);
+    return fetchMediaImagesInternal(FetchMediaImagesParams.newBuilder().setAppId(appId).build());
+  }
+
+  /** Note: Testing legacy JSON code path for older clients. */
+  @Deprecated
+  List<MediaImage> fetchMediaImagesOld(String appId) throws ApiException {
+    return fetchMediaImagesInternal(new FetchMediaImagesApiParams(appId));
+  }
+
+  private List<MediaImage> fetchMediaImagesInternal(Object params) throws ApiException {
     String url = String.format(mServerUrl, "fetchMediaImages");
     try {
       byte[] content = mUrlFetcher.fetchUrl(url, params);
@@ -149,11 +199,12 @@ public class RetrostoreClientImpl implements RetrostoreClient {
   }
 
   @Override
-  public long uploadState(SystemState state) throws ApiException {
+  public int uploadState(SystemState state) throws ApiException {
+    UploadSystemStateParams params = UploadSystemStateParams.newBuilder().setState(state).build();
     String url = String.format(mServerUrl, "uploadState");
 
     try {
-      byte[] content = mUrlFetcher.fetchUrl(url, state.toByteArray());
+      byte[] content = mUrlFetcher.fetchUrl(url, params);
       ApiResponseUploadSystemState apiResponse = ApiResponseUploadSystemState.parseFrom(content);
       if (!apiResponse.getSuccess()) {
         throw new ApiException(String.format(
@@ -166,8 +217,8 @@ public class RetrostoreClientImpl implements RetrostoreClient {
   }
 
   @Override
-  public SystemState downloadState(long token) throws ApiException {
-    DownloadSystemStateApiParams params = new DownloadSystemStateApiParams(token);
+  public SystemState downloadState(int token) throws ApiException {
+    DownloadSystemStateParams params = DownloadSystemStateParams.newBuilder().setToken(token).build();
     String url = String.format(mServerUrl, "downloadState");
 
     try {
@@ -183,5 +234,4 @@ public class RetrostoreClientImpl implements RetrostoreClient {
       throw new ApiException("Unable to make request to server.", e);
     }
   }
-
 }

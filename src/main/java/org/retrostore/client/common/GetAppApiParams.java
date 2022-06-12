@@ -19,6 +19,7 @@ package org.retrostore.client.common;
 /**
  * Parameters for get getApp API call.
  */
+@Deprecated
 public class GetAppApiParams {
   /** The ID of the app for which to get the data for. */
   public final String appId;

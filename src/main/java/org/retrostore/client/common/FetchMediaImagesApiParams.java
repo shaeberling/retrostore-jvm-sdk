@@ -19,13 +19,10 @@ package org.retrostore.client.common;
 /**
  * Parameters used for the fetchMediaImages API call.
  */
+@Deprecated
 public class FetchMediaImagesApiParams {
   /** The ID of the app for which to fetch the media images. */
   public final String appId;
-
-  public FetchMediaImagesApiParams() {
-    appId = null;
-  }
 
   public FetchMediaImagesApiParams(String appId) {
     this.appId = appId;

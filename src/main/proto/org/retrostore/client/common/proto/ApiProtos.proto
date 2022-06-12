@@ -38,7 +38,7 @@ message ApiResponseUploadSystemState {
     // An optional (error) message, human-readable.
     string message = 2;
     // The token referring to the just uploaded state.
-    int64 token = 3;
+    int32 token = 3;
 }
 
 // A RetroStore app item.
@@ -130,4 +130,36 @@ message SystemState {
     Trs80Model model = 1;
     Registers registers = 2;
     repeated MemoryRegion memoryRegions = 3;
+}
+
+// API Params
+message FetchMediaImagesParams {
+    string app_id = 1;
+}
+
+// API Params
+message GetAppParams {
+    string app_id = 1;
+}
+
+// API Params
+message ListAppsParams {
+    int32 start = 1;
+    int32 num = 2;
+    string query = 3;
+    Trs80Params trs80 = 4;
+
+    message Trs80Params {
+        repeated string media_types = 1;
+    }
+}
+
+// API Params
+message UploadSystemStateParams {
+    SystemState state = 1;
+}
+
+// API Params
+message DownloadSystemStateParams {
+    int32 token = 1;
 }

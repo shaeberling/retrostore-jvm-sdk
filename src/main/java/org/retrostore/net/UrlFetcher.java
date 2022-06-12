@@ -16,6 +16,8 @@
 
 package org.retrostore.net;
 
+import com.google.protobuf.GeneratedMessageLite;
+
 import java.io.IOException;
 
 /**
@@ -33,5 +35,8 @@ public interface UrlFetcher {
    */
   byte[] fetchUrl(String url, byte[] body) throws IOException;
 
+  byte[] fetchUrl(String url, GeneratedMessageLite<?, ?> obj) throws IOException;
+
+  @Deprecated
   byte[] fetchUrl(String url, Object obj) throws IOException;
 }
