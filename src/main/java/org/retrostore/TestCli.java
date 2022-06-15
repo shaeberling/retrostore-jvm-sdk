@@ -46,7 +46,7 @@ public class TestCli {
 
   public static void main(String[] args) throws ApiException {
     RetrostoreClientImpl retrostore =
-        RetrostoreClientImpl.get("n/a", "https://retrostore.org/api/%s",
+        RetrostoreClientImpl.get("n/a", "https://20220615t014101-dot-trs-80.uc.r.appspot.com/api/%s",
             false);
     if (args.length > 1 && args[0].equalsIgnoreCase("--search")) {
       StringBuilder query = new StringBuilder();
@@ -274,6 +274,7 @@ public class TestCli {
         (new Random()).nextBytes(data);
         SystemState.MemoryRegion.Builder region = SystemState.MemoryRegion.newBuilder();
         region.setStart(from);
+        region.setLength(32000);
         region.setData(ByteString.copyFrom(data));
         state.addMemoryRegions(region);
       }
