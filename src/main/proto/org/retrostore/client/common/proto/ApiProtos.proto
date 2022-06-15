@@ -124,6 +124,7 @@ message SystemState {
     // Single memory region.
     message MemoryRegion {
         int32 start = 1;
+        int32 length = 3;
         bytes data = 2;
     }
 
