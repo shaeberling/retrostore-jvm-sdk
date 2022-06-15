@@ -1,0 +1,20 @@
+# Used by nanopb to set some reasonable defaults.
+
+ApiResponseApps.message                 max_size:80
+ApiResponseMediaImages.message          max_size:80
+ApiResponseDownloadSystemState.message  max_size:80
+ApiResponseUploadSystemState.message    max_size:80
+
+App.id                                  max_size:40
+App.name                                max_size:64
+App.version                             max_size:24
+App.description                         max_size:1024
+:qApp.author                              max_size:64
+
+MediaImage.filename                     max_size:128
+# MediaImage.data
+MediaImage.description                  max_size:128
+
+FetchMediaImagesParams.app_id           max_size:40
+GetAppParams.app_id                     max_size:40
+ListAppsParams.query                    max_size:128
