@@ -13,6 +13,15 @@ message ApiResponseApps {
     // A list of apps returned by the request.
     repeated App app = 3;
 }
+// Response for APIs that receive a list of apps (NANO version).
+message ApiResponseAppsNano {
+    // Whether the request was a success.
+    bool success = 1;
+    // An optional (error) message, human-readable.
+    string message = 2;
+    // A list of apps returned by the request.
+    repeated AppNano app = 3;
+}
 
 message ApiResponseMediaImages {
     // Whether the request was a success.
@@ -61,6 +70,24 @@ message App {
     Trs80Extension ext_trs80 = 8;
 
     // NEXT ID: 9;
+}
+
+// An app object with less data, more suitable for embedded clients
+message AppNano {
+    // The ID to uniquely identify an app.
+    string id = 1;
+    // The name of the app.
+    string name = 2;
+    // The human readable version of this app.
+    string version = 3;
+    // The original release year of the app.
+    int32 release_year = 4;
+    // The author of the app (not the uploader).
+    string author = 5;
+    // Extension set for TRS80 apps.
+    Trs80Extension ext_trs80 = 6;
+
+    // NEXT ID: 7;
 }
 
 // The TRS-80 model types.

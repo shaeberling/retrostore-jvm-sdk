@@ -22,10 +22,12 @@ import org.retrostore.client.common.FetchMediaImagesApiParams;
 import org.retrostore.client.common.GetAppApiParams;
 import org.retrostore.client.common.ListAppsApiParams;
 import org.retrostore.client.common.proto.ApiResponseApps;
+import org.retrostore.client.common.proto.ApiResponseAppsNano;
 import org.retrostore.client.common.proto.ApiResponseDownloadSystemState;
 import org.retrostore.client.common.proto.ApiResponseMediaImages;
 import org.retrostore.client.common.proto.ApiResponseUploadSystemState;
 import org.retrostore.client.common.proto.App;
+import org.retrostore.client.common.proto.AppNano;
 import org.retrostore.client.common.proto.DownloadSystemStateParams;
 import org.retrostore.client.common.proto.FetchMediaImagesParams;
 import org.retrostore.client.common.proto.GetAppParams;
@@ -44,7 +46,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 public class RetrostoreClientImpl implements RetrostoreClient {
   private static final String DEFAULT_SERVER_URL = "https://retrostore.org/api/%s";
@@ -136,6 +137,47 @@ public class RetrostoreClientImpl implements RetrostoreClient {
             .setQuery(searchQuery)
             .setTrs80(ListAppsParams.Trs80Params.newBuilder().addAllMediaTypes(hasMediaTypes))
             .build());
+  }
+
+  @Override
+  public List<AppNano> fetchAppsNano(int start, int num) throws ApiException {
+    ListAppsParams params = ListAppsParams.newBuilder()
+        .setStart(start)
+        .setNum(num)
+        .build();
+    return fetchAppsNanoInternal(params);
+  }
+
+  @Override
+  public List<AppNano> fetchAppsNano(int start, int num, String searchQuery,
+                                     Set<MediaType> hasMediaTypes) throws ApiException {
+    if (hasMediaTypes == null) {
+      hasMediaTypes = new HashSet<>();
+    }
+    ListAppsParams params = ListAppsParams.newBuilder()
+        .setStart(start)
+        .setNum(num)
+        .setQuery(searchQuery)
+        .setTrs80(ListAppsParams.Trs80Params.newBuilder().addAllMediaTypes(hasMediaTypes))
+        .build();
+    return fetchAppsNanoInternal(params);
+  }
+
+  private List<AppNano> fetchAppsNanoInternal(ListAppsParams params) throws ApiException {
+    String url = String.format(mServerUrl, "listAppsNano");
+
+    try {
+      byte[] content = mUrlFetcher.fetchUrl(url, params);
+      ApiResponseAppsNano apiResponse = ApiResponseAppsNano.parseFrom(content);
+
+      if (!apiResponse.getSuccess()) {
+        throw new ApiException(String.format(
+            "Server reported error: '%s'", apiResponse.getMessage()));
+      }
+      return apiResponse.getAppList();
+    } catch (IOException e) {
+      throw new ApiException("Unable to make request to server.", e);
+    }
   }
 
 

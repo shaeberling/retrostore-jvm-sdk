@@ -17,6 +17,7 @@
 package org.retrostore;
 
 import org.retrostore.client.common.proto.App;
+import org.retrostore.client.common.proto.AppNano;
 import org.retrostore.client.common.proto.MediaImage;
 import org.retrostore.client.common.proto.MediaType;
 import org.retrostore.client.common.proto.SystemState;
@@ -51,6 +52,22 @@ public interface RetrostoreClient {
    * Like {@link #fetchApps(int, int)} but adds options.
    */
   List<App> fetchApps(int start, int num, String searchQuery, Set<MediaType> hasMediaTypes)
+      throws ApiException;
+
+  /**
+   * Fetches a number of RetroStore app items. Blocks until results are received.
+   *
+   * @param start the index at which to start.
+   * @param num   the number of app items to fetch (max).
+   * @return A list of the items requested or an error, if something
+   * went wrong.
+   */
+  List<AppNano> fetchAppsNano(int start, int num) throws ApiException;
+
+  /**
+   * Like {@link #fetchApps(int, int)} but adds options.
+   */
+  List<AppNano> fetchAppsNano(int start, int num, String searchQuery, Set<MediaType> hasMediaTypes)
       throws ApiException;
 
   /**

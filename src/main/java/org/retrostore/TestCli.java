@@ -21,6 +21,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.protobuf.ByteString;
 import org.retrostore.client.common.proto.App;
+import org.retrostore.client.common.proto.AppNano;
 import org.retrostore.client.common.proto.MediaImage;
 import org.retrostore.client.common.proto.MediaType;
 import org.retrostore.client.common.proto.SystemState;
@@ -36,6 +37,7 @@ import java.util.Random;
 public class TestCli {
 
   private static final RetroStoreApiTest[] tests = {
+      new FetchMultipleNanoTest(),
       new FetchMultipleTest(),
       new FetchSingleTest(),
       new FilterByMediaTypeTest(),
@@ -70,8 +72,8 @@ public class TestCli {
           System.out.println("=========================================");
         }
       } catch (Exception ex) {
-        System.out.println("TEST FAILED: " + test.getClass().getSimpleName());
-        System.out.println("Exception: " + ex.getMessage());
+        System.err.println("TEST FAILED: " + test.getClass().getSimpleName());
+        System.err.println("Exception: " + ex.getMessage());
         System.out.println("=========================================");
       }
     }
@@ -146,8 +148,26 @@ public class TestCli {
     public boolean runTest(RetrostoreClient retrostore) throws ApiException {
       List<App> items = retrostore.fetchApps(0, 5);
 
+      boolean error = false;
       for (App item : items) {
         System.out.println(item.getName() + " - " + item.getId());
+        if (item.getId().isBlank()) {
+          System.err.println("Item with name " + item.getName() + " has no ID");
+          error = true;
+        }
+        if (item.getName().isBlank()) {
+          System.err.println("Item with ID " + item.getId() + " has no name");
+          error = true;
+        }
+        if (item.getAuthor().isBlank()) {
+          System.err.println("Item with ID " + item.getId() + " has no author");
+          error = true;
+        }
+        if (item.getReleaseYear() < 1900) {
+          System.err.println("Item with ID " + item.getId() + " has bad release year");
+          error = true;
+        }
+
         List<MediaImage> mediaImages = retrostore.fetchMediaImages(item.getId());
         for (MediaImage mediaImage : mediaImages) {
           System.out.printf(
@@ -156,6 +176,11 @@ public class TestCli {
               mediaImage.getType().name(),
               mediaImage.getData().size());
         }
+      }
+
+
+      if (error) {
+        return false;
       }
 
       if (items.size() == 5) {
@@ -167,6 +192,57 @@ public class TestCli {
       }
     }
   }
+
+  static class FetchMultipleNanoTest implements RetroStoreApiTest {
+    @Override
+    public boolean runTest(RetrostoreClient retrostore) throws ApiException {
+      List<AppNano> items = retrostore.fetchAppsNano(0, 5);
+
+      boolean error = false;
+      for (AppNano item : items) {
+        System.out.println(item.getName() + " - " + item.getId());
+        if (item.getId().isBlank()) {
+          System.err.println("Item with name " + item.getName() + " has no ID");
+          error = true;
+        }
+        if (item.getName().isBlank()) {
+          System.err.println("Item with ID " + item.getId() + " has no name");
+          error = true;
+        }
+        if (item.getAuthor().isBlank()) {
+          System.err.println("Item with ID " + item.getId() + " has no author");
+          error = true;
+        }
+        if (item.getReleaseYear() < 1900) {
+          System.err.println("Item with ID " + item.getId() + " has bad release year");
+          error = true;
+        }
+
+
+        List<MediaImage> mediaImages = retrostore.fetchMediaImages(item.getId());
+        for (MediaImage mediaImage : mediaImages) {
+          System.out.printf(
+              "- Media: %s, %s, %d%n",
+              mediaImage.getFilename(),
+              mediaImage.getType().name(),
+              mediaImage.getData().size());
+        }
+      }
+
+      if (error) {
+        return false;
+      }
+
+      if (items.size() == 5) {
+        System.out.printf("Got %d items.%n", items.size());
+        return true;
+      } else {
+        System.err.printf("Got %d but expected %d%n", items.size(), 5);
+        return false;
+      }
+    }
+  }
+
 
   static class FetchSingleTest implements RetroStoreApiTest {
     @Override
