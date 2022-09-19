@@ -1,7 +1,6 @@
 # Used by nanopb to set some reasonable defaults.
 
 ApiResponseApps.message                 max_size:80
-ApiResponseApps.app                     max_count:5
 ApiResponseMediaImages.message          max_size:80
 ApiResponseMediaImages.mediaImage       max_count:5
 ApiResponseDownloadSystemState.message  max_size:80
