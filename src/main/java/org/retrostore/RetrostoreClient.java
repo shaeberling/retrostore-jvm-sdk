@@ -79,6 +79,15 @@ public interface RetrostoreClient {
   List<MediaImage> fetchMediaImages(String appId) throws ApiException;
 
   /**
+   * Fetches the media images for the app with the given ID.
+   *
+   * @param appId the ID of the app for which to fetch the media images.
+   * @param types only include images of the given types.
+   * @return A list of all the media images fetched for this app.
+   */
+  List<MediaImage> fetchMediaImages(String appId, Set<MediaType> types) throws ApiException;
+
+  /**
    * Uploads a new system state.
    *
    * @return A unique token that can be used to fetch this state later.

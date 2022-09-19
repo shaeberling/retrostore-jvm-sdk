@@ -30,3 +30,5 @@ GetAppParams.app_id                     max_size:40
 ListAppsParams.query                    max_size:128
 
 SystemState.memoryRegions               max_count:10
+
+FetchMediaImagesParams.media_type       max_count:5

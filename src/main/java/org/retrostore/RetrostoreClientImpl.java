@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class RetrostoreClientImpl implements RetrostoreClient {
   private static final String DEFAULT_SERVER_URL = "https://retrostore.org/api/%s";
@@ -213,7 +214,22 @@ public class RetrostoreClientImpl implements RetrostoreClient {
 
   @Override
   public List<MediaImage> fetchMediaImages(String appId) throws ApiException {
-    return fetchMediaImagesInternal(FetchMediaImagesParams.newBuilder().setAppId(appId).build());
+    return fetchMediaImages(appId, new HashSet<>());
+  }
+
+  @Override
+  public List<MediaImage> fetchMediaImages(String appId, Set<MediaType> types) throws ApiException {
+    List<MediaImage> images =
+        fetchMediaImagesInternal(FetchMediaImagesParams
+        .newBuilder()
+        .addAllMediaType(types)
+        .setAppId(appId)
+        .build());
+
+    // Only return non-zero images, which is skip zero-size "UNKNOWN" entries.
+    return images.stream()
+        .filter(img -> img.getData().size() > 0)
+        .collect(Collectors.toList());
   }
 
   /** Note: Testing legacy JSON code path for older clients. */

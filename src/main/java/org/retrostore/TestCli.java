@@ -30,6 +30,8 @@ import org.retrostore.client.common.proto.Trs80Model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A CLI to test the RetroStore API.
@@ -37,13 +39,14 @@ import java.util.Random;
 public class TestCli {
 
   private static final RetroStoreApiTest[] tests = {
-      new FetchMultipleNanoTest(),
-      new FetchMultipleTest(),
-      new FetchSingleTest(),
-      new FilterByMediaTypeTest(),
-      new BasicFileTypeTest(),
-      new SortTest(),
-      new UploadAndDownloadStateTest()
+//      new FetchMultipleNanoTest(),
+//      new FetchMultipleTest(),
+//      new FetchSingleTest(),
+//      new FilterByMediaTypeTest(),
+//      new BasicFileTypeTest(),
+//      new SortTest(),
+      new FetchMediaImagesTest(),
+//      new UploadAndDownloadStateTest()
   };
 
   public static void main(String[] args) throws ApiException {
@@ -394,6 +397,43 @@ public class TestCli {
       SystemState downloadedState = retrostore.downloadState(token);
       if (!downloadedState.equals(buildState)) {
         System.err.println("Downloaded state does not match sent state.");
+        return false;
+      }
+
+      return true;
+    }
+  }
+
+  static class FetchMediaImagesTest implements RetroStoreApiTest {
+
+    @Override
+    public boolean runTest(RetrostoreClient retrostore) throws ApiException {
+      String BREAKDOWN_ID = "29b20252-680f-11e8-b4a9-1f10b5491ef5";
+      // Breakdown has a "Disk" and "cmd" image.
+      List<MediaImage> mediaImages = retrostore.fetchMediaImages(BREAKDOWN_ID);
+
+      if (mediaImages.size() != 2) {
+        System.err.println("'Breakdown' should have exactly two media images but got: " + mediaImages.size());
+        return false;
+      }
+
+      Set<MediaType> imageTypes =
+          mediaImages.stream().map(MediaImage::getType).collect(Collectors.toSet());
+
+      if (!imageTypes.equals(Set.of(MediaType.COMMAND, MediaType.DISK))) {
+        System.err.println("Media image types not correct.");
+        return false;
+      }
+
+
+      // Let's say we only want the CMD.
+      mediaImages = retrostore.fetchMediaImages(BREAKDOWN_ID, Set.of(MediaType.COMMAND));
+      if (mediaImages.size() != 1) {
+        System.err.println("Requested only the CMD, but got more!");
+        return false;
+      }
+      if (mediaImages.get(0).getType() != MediaType.COMMAND) {
+        System.err.println("Requested a CMD but got something else.");
         return false;
       }
 

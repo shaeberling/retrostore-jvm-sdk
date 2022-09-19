@@ -163,6 +163,7 @@ message SystemState {
 // API Params
 message FetchMediaImagesParams {
     string app_id = 1;
+    repeated MediaType media_type = 2;
 }
 
 // API Params
