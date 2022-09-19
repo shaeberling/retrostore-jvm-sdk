@@ -15,6 +15,13 @@ App.screenshot_url                      max_count:5
 App.screenshot_url                      max_size:150
 App.author                              max_size:64
 
+ApiResponseAppsNano.message             max_size:80
+AppNano.id                              max_size:40
+AppNano.name                            max_size:64
+AppNano.version                         max_size:24
+AppNano.author                          max_size:64
+
+
 MediaImage.filename                     max_size:30
 # MediaImage.data
 MediaImage.description                  max_size:128
