@@ -39,14 +39,14 @@ import java.util.stream.Collectors;
 public class TestCli {
 
   private static final RetroStoreApiTest[] tests = {
-//      new FetchMultipleNanoTest(),
-//      new FetchMultipleTest(),
-//      new FetchSingleTest(),
-//      new FilterByMediaTypeTest(),
-//      new BasicFileTypeTest(),
-//      new SortTest(),
+      new FetchMultipleNanoTest(),
+      new FetchMultipleTest(),
+      new FetchSingleTest(),
+      new FilterByMediaTypeTest(),
+      new BasicFileTypeTest(),
+      new SortTest(),
       new FetchMediaImagesTest(),
-//      new UploadAndDownloadStateTest()
+      new UploadAndDownloadStateTest()
   };
 
   public static void main(String[] args) throws ApiException {
