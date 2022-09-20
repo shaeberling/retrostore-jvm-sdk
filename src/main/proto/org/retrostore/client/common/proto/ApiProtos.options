@@ -8,7 +8,6 @@ ApiResponseUploadSystemState.message    max_size:80
 App.id                                  max_size:40
 App.name                                max_size:64
 App.version                             max_size:24
-App.description                         max_size:400
 App.screenshot_url                      max_count:5
 App.screenshot_url                      max_size:150
 App.author                              max_size:64
