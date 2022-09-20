@@ -40,6 +40,8 @@ public class TestCli {
 
   private static final RetroStoreApiTest[] tests = {
       new FetchMultipleNanoTest(),
+      new FetchMultipleNanoQueryWithoutTypes(),
+      new FetchMultipleNanoQueryWithTypes(),
       new FetchMultipleTest(),
       new FetchSingleTest(),
       new FilterByMediaTypeTest(),
@@ -243,6 +245,56 @@ public class TestCli {
         System.err.printf("Got %d but expected %d%n", items.size(), 5);
         return false;
       }
+    }
+  }
+
+  static class FetchMultipleNanoQueryWithoutTypes implements RetroStoreApiTest {
+    @Override
+    public boolean runTest(RetrostoreClient retrostore) throws ApiException {
+      Set<String> appNamesNoFilter = retrostore.fetchAppsNano(
+              0, 10, "ldos OR donkey", null).stream()
+          .map(AppNano::getName).collect(Collectors.toSet());
+
+      if (!appNamesNoFilter.contains("Donkey Kong")) {
+        System.err.println("Donkey Kong is mising.");
+        return false;
+      }
+      if (!appNamesNoFilter.contains("LDOS - Model I")) {
+        System.err.println("LDOS - Model I is mising.");
+        return false;
+      }
+      if (!appNamesNoFilter.contains("LDOS - Model III")) {
+        System.err.println("LDOS - Model III is mising.");
+        return false;
+      }
+
+      return true;
+    }
+  }
+
+
+  static class FetchMultipleNanoQueryWithTypes implements RetroStoreApiTest {
+    @Override
+    public boolean runTest(RetrostoreClient retrostore) throws ApiException {
+      Set<String> appNamesNoFilter = retrostore.fetchAppsNano(
+          0, 10, "ldos OR donkey",
+          Set.of(MediaType.COMMAND)).stream()
+          .map(AppNano::getName).collect(Collectors.toSet());
+
+      if (!appNamesNoFilter.contains("Donkey Kong")) {
+        System.err.println("Donkey Kong is mising.");
+        return false;
+      }
+      if (appNamesNoFilter.contains("LDOS - Model I")) {
+        System.err.println("LDOS - Model I should not be returned.");
+        return false;
+      }
+      if (appNamesNoFilter.contains("LDOS - Model III")) {
+        System.err.println("LDOS - Model III should not be returned.");
+        return false;
+      }
+
+      return true;
     }
   }
 
