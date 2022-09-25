@@ -28,6 +28,7 @@ import org.retrostore.client.common.proto.ApiResponseMediaImages;
 import org.retrostore.client.common.proto.ApiResponseUploadSystemState;
 import org.retrostore.client.common.proto.App;
 import org.retrostore.client.common.proto.AppNano;
+import org.retrostore.client.common.proto.DownloadSystemStateMemoryRegionParams;
 import org.retrostore.client.common.proto.DownloadSystemStateParams;
 import org.retrostore.client.common.proto.FetchMediaImagesParams;
 import org.retrostore.client.common.proto.GetAppParams;
@@ -274,18 +275,54 @@ public class RetrostoreClientImpl implements RetrostoreClient {
 
   @Override
   public SystemState downloadState(long token) throws ApiException {
-    DownloadSystemStateParams params = DownloadSystemStateParams.newBuilder().setToken(token).build();
+    return downloadState(token, false);
+  }
+
+  @Override
+  public SystemState downloadState(long token,
+                                   boolean exclude_memory_regions)
+      throws ApiException {
+    DownloadSystemStateParams params =
+        DownloadSystemStateParams.newBuilder()
+            .setToken(token)
+            .setExcludeMemoryRegions(exclude_memory_regions)
+            .build();
     String url = String.format(mServerUrl, "downloadState");
 
     try {
       byte[] content = mUrlFetcher.fetchUrl(url, params);
-      ApiResponseDownloadSystemState apiResponse = ApiResponseDownloadSystemState.parseFrom(content);
+      ApiResponseDownloadSystemState apiResponse =
+          ApiResponseDownloadSystemState.parseFrom(content);
 
       if (!apiResponse.getSuccess()) {
         throw new ApiException(String.format(
             "Server reported error: '%s'", apiResponse.getMessage()));
       }
       return apiResponse.getSystemState();
+    } catch (IOException e) {
+      throw new ApiException("Unable to make request to server.", e);
+    }
+  }
+
+  @Override
+  public byte[] downloadSystemStateMemoryRegion(long token,
+                                                int start,
+                                                int length) throws ApiException {
+    DownloadSystemStateMemoryRegionParams params =
+        DownloadSystemStateMemoryRegionParams.newBuilder()
+            .setToken(token)
+            .setStart(start)
+            .setLength(length)
+            .build();
+    String url = String.format(mServerUrl, "downloadStateMemoryRegion");
+
+    try {
+      byte[] bytes = mUrlFetcher.fetchUrl(url, params);
+      if (bytes.length != params.getLength()) {
+        throw new ApiException(String.format("Length received (%d) does not " +
+            "match length requested (%d)", bytes.length, params.getLength()));
+      }
+      return bytes;
     } catch (IOException e) {
       throw new ApiException("Unable to make request to server.", e);
     }

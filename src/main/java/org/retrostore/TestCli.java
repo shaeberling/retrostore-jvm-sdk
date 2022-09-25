@@ -48,7 +48,8 @@ public class TestCli {
       new BasicFileTypeTest(),
       new SortTest(),
       new FetchMediaImagesTest(),
-      new UploadAndDownloadStateTest()
+      new UploadAndDownloadStateTest(),
+      new ExcludeMemoryRegionsDownloadSystemStateTest()
   };
 
   public static void main(String[] args) throws ApiException {
@@ -395,49 +396,43 @@ public class TestCli {
     }
   }
 
-  static class UploadAndDownloadStateTest implements RetroStoreApiTest {
-
-    private void addRandomTestData(SystemState.Builder state) {
-
-      int[] froms = (new Random()).ints(10).toArray();
-      for (int from : froms) {
-        byte[] data = new byte[32000];
-        (new Random()).nextBytes(data);
-        SystemState.MemoryRegion.Builder region = SystemState.MemoryRegion.newBuilder();
-        region.setStart(from);
-        region.setLength(32000);
-        region.setData(ByteString.copyFrom(data));
-        state.addMemoryRegions(region);
-      }
-    }
+  static class ExcludeMemoryRegionsDownloadSystemStateTest implements RetroStoreApiTest {
 
     @Override
     public boolean runTest(RetrostoreClient retrostore) throws ApiException {
-      // First, upload a test SystemState.
-      SystemState.Builder state = SystemState.newBuilder();
+      SystemState uploadState = createRandomState();
+      long token = retrostore.uploadState(uploadState);
+      SystemState downloadState = retrostore.downloadState(token, true);
 
-      state.setModel(Trs80Model.MODEL_III);
-      SystemState.Registers.Builder regs = SystemState.Registers.newBuilder();
-      regs.setIx(9);
-      regs.setIy(7);
-      regs.setPc(5);
-      regs.setSp(3);
-      regs.setAf(1);
-      regs.setBc(2);
-      regs.setDe(4);
-      regs.setHl(6);
-      regs.setAfPrime(100);
-      regs.setBcPrime(80);
-      regs.setDePrime(42);
-      regs.setHlPrime(23);
-      regs.setI(11);
-      regs.setR1(22);
-      regs.setR2(200);
-      state.setRegisters(regs);
+      // First lets verify that the upload state had memory regions.
+      if (uploadState.getMemoryRegionsList().isEmpty()) {
+        System.err.println("Internal error: Upload state should have memory regions");
+        return false;
+      }
 
-      addRandomTestData(state);
+      // Then verify that the downloaded state has no memory regions.
+      if (!downloadState.getMemoryRegionsList().isEmpty()) {
+        System.err.println("Downloaded state should have no memory regions.");
+        return false;
+      }
 
-      SystemState buildState = state.build();
+      // Make sure the rest of the object is the same
+      SystemState uploadNoMemory =
+          uploadState.toBuilder().clearMemoryRegions().build();
+      if (!uploadNoMemory.equals(downloadState)) {
+        System.err.println("Downloaded state does not match expecations");
+        return false;
+      }
+
+      return true;
+    }
+  }
+
+  static class UploadAndDownloadStateTest implements RetroStoreApiTest {
+
+    @Override
+    public boolean runTest(RetrostoreClient retrostore) throws ApiException {
+      SystemState buildState = createRandomState();
       long token = retrostore.uploadState(buildState);
       System.out.printf("Uploaded test state and got token '%d'\n", token);
 
@@ -454,6 +449,45 @@ public class TestCli {
 
       return true;
     }
+  }
+
+  private static SystemState createRandomState() {
+    // First, upload a test SystemState.
+    SystemState.Builder state = SystemState.newBuilder();
+
+    state.setModel(Trs80Model.MODEL_III);
+    SystemState.Registers.Builder regs = SystemState.Registers.newBuilder();
+    regs.setIx(9);
+    regs.setIy(7);
+    regs.setPc(5);
+    regs.setSp(3);
+    regs.setAf(1);
+    regs.setBc(2);
+    regs.setDe(4);
+    regs.setHl(6);
+    regs.setAfPrime(100);
+    regs.setBcPrime(80);
+    regs.setDePrime(42);
+    regs.setHlPrime(23);
+    regs.setI(11);
+    regs.setR1(22);
+    regs.setR2(200);
+    state.setRegisters(regs);
+
+    // Add random data for memory regions.
+    int[] froms = (new Random()).ints(10).toArray();
+    for (int from : froms) {
+      byte[] data = new byte[32000];
+      (new Random()).nextBytes(data);
+      SystemState.MemoryRegion.Builder region =
+          SystemState.MemoryRegion.newBuilder();
+      region.setStart(from);
+      region.setLength(32000);
+      region.setData(ByteString.copyFrom(data));
+      state.addMemoryRegions(region);
+    }
+
+    return state.build();
   }
 
   static class FetchMediaImagesTest implements RetroStoreApiTest {

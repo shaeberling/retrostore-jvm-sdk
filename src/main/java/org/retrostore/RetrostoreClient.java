@@ -39,7 +39,8 @@ public interface RetrostoreClient {
   App getApp(String appId) throws ApiException;
 
   /**
-   * Fetches a number of RetroStore app items. Blocks until results are received.
+   * Fetches a number of RetroStore app items. Blocks until results are
+   * received.
    *
    * @param start the index at which to start.
    * @param num   the number of app items to fetch (max).
@@ -51,11 +52,13 @@ public interface RetrostoreClient {
   /**
    * Like {@link #fetchApps(int, int)} but adds options.
    */
-  List<App> fetchApps(int start, int num, String searchQuery, Set<MediaType> hasMediaTypes)
+  List<App> fetchApps(int start, int num, String searchQuery,
+                      Set<MediaType> hasMediaTypes)
       throws ApiException;
 
   /**
-   * Fetches a number of RetroStore app items. Blocks until results are received.
+   * Fetches a number of RetroStore app items. Blocks until results are
+   * received.
    *
    * @param start the index at which to start.
    * @param num   the number of app items to fetch (max).
@@ -67,7 +70,8 @@ public interface RetrostoreClient {
   /**
    * Like {@link #fetchApps(int, int)} but adds options.
    */
-  List<AppNano> fetchAppsNano(int start, int num, String searchQuery, Set<MediaType> hasMediaTypes)
+  List<AppNano> fetchAppsNano(int start, int num, String searchQuery,
+                              Set<MediaType> hasMediaTypes)
       throws ApiException;
 
   /**
@@ -94,7 +98,30 @@ public interface RetrostoreClient {
    */
   long uploadState(SystemState state) throws ApiException;
 
-  /** Fetches a system state associated with the given token.
-   * @param token*/
+  /**
+   * Fetches a system state associated with the given token.
+   *
+   * @param token the token of the state to download. Was previously returned
+   *              when a state was uploaded
+   */
   SystemState downloadState(long token) throws ApiException;
+
+  /**
+   * Fetches a system state associated with the given token.
+   *
+   * @param token the token of the state to download. Was previously returned
+   *              when a state was uploaded
+   */
+  SystemState downloadState(long token, boolean exclude_memory_regions) throws ApiException;
+
+  /**
+   * Downloads a portion of a system state's memory region.
+   *
+   * @param token  the system of the state that's memory region should be
+   *               fetched.
+   * @param start  the start address (inclusive) of the memory region.
+   * @param length the length of the memory region to fetch.
+   * @return The memory region requested.
+   */
+  byte[] downloadSystemStateMemoryRegion(long token, int start, int length) throws ApiException;
 }

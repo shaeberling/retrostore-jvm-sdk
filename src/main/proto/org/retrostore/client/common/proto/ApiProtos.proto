@@ -191,4 +191,12 @@ message UploadSystemStateParams {
 // API Params
 message DownloadSystemStateParams {
     int64 token = 1;
+    bool exclude_memory_regions = 2;
+}
+
+// API Params
+message DownloadSystemStateMemoryRegionParams {
+    int64 token = 1;
+    int32 start = 2;
+    int32 length = 3;
 }
