@@ -28,6 +28,7 @@ import org.retrostore.client.common.proto.SystemState;
 import org.retrostore.client.common.proto.Trs80Model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -49,7 +50,8 @@ public class TestCli {
       new SortTest(),
       new FetchMediaImagesTest(),
       new UploadAndDownloadStateTest(),
-      new ExcludeMemoryRegionsDownloadSystemStateTest()
+      new ExcludeMemoryRegionsDownloadSystemStateTest(),
+      new DownloadStateMemoryRegionsTests()
   };
 
   public static void main(String[] args) throws ApiException {
@@ -449,6 +451,92 @@ public class TestCli {
 
       return true;
     }
+  }
+
+  static class DownloadStateMemoryRegionsTests implements RetroStoreApiTest {
+
+    @Override
+    public boolean runTest(RetrostoreClient retrostore) throws ApiException {
+      SystemState.Builder state =
+          createRandomState().toBuilder().clearMemoryRegions();
+      // Non-overlapping separate region.
+      state.addMemoryRegions(SystemState.MemoryRegion.newBuilder()
+          .setStart(1000)
+          .setData(ByteString.copyFrom(new byte[]{42, 43, 44, 45}))
+          .setLength(4));
+
+      // Two regions that are connecting.
+      state.addMemoryRegions(SystemState.MemoryRegion.newBuilder()
+          .setStart(1100)
+          .setData(ByteString.copyFrom(new byte[]{1, 2, 3, 4, 5, 6, 7, 8}))
+          .setLength(8));
+      state.addMemoryRegions(SystemState.MemoryRegion.newBuilder()
+          .setStart(1108)
+          .setData(ByteString.copyFrom(new byte[]{11, 22, 33, 44, 55, 66}))
+          .setLength(6));
+      // A region that is close by the former, but with a gap.
+      state.addMemoryRegions(SystemState.MemoryRegion.newBuilder()
+          .setStart(1120)
+          .setData(ByteString.copyFrom(new byte[]{101, 102, 103, 104, 105}))
+          .setLength(5));
+      long token = retrostore.uploadState(state.build());
+      System.out.printf("Uploaded test state and got token '%d'\n", token);
+
+      if (token <= 0) {
+        System.err.printf("Got non-positive token %d\n", token);
+        return false;
+      }
+
+      // Exact match of uploads
+      if (!checkMemoryEqual(1,
+          retrostore.downloadSystemStateMemoryRegion(token, 1000, 4),
+          new byte[]{42, 43, 44, 45}))
+        return false;
+      if (!checkMemoryEqual(2,
+          retrostore.downloadSystemStateMemoryRegion(token, 1108, 6),
+          new byte[]{11, 22, 33, 44, 55, 66}))
+        return false;
+
+      // Requesting two connected regions at once..
+      if (!checkMemoryEqual(3,
+          retrostore.downloadSystemStateMemoryRegion(token, 1100, 14),
+          new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 11, 22, 33, 44, 55, 66}))
+        return false;
+
+
+      // Requesting more (padding) should result in '0'.
+      if (!checkMemoryEqual(4,
+          retrostore.downloadSystemStateMemoryRegion(token, 998, 8),
+          new byte[]{0, 0, 42, 43, 44, 45, 0, 0}))
+
+        return false;
+
+      // Request half into one.
+      if (!checkMemoryEqual(5,
+          retrostore.downloadSystemStateMemoryRegion(token, 1002, 4),
+          new byte[]{44, 45, 0, 0}))
+        return false;
+
+      // Request half into one across and half into another region.
+      if (!checkMemoryEqual(6,
+          retrostore.downloadSystemStateMemoryRegion(token, 1111, 12),
+          new byte[]{44, 55, 66, 0, 0, 0, 0, 0, 0, 101, 102, 103}))
+        return false;
+
+
+
+
+      return true;
+    }
+  }
+
+  private static boolean checkMemoryEqual(int n, byte[] actual, byte[] want) {
+    if (!Arrays.equals(actual, want)) {
+      System.err.printf("#%d Memory does not match: %s vs %s\n",
+          n, Arrays.toString(actual), Arrays.toString(want));
+      return false;
+    }
+    return true;
   }
 
   private static SystemState createRandomState() {

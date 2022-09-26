@@ -308,6 +308,7 @@ public class RetrostoreClientImpl implements RetrostoreClient {
   public byte[] downloadSystemStateMemoryRegion(long token,
                                                 int start,
                                                 int length) throws ApiException {
+    long startTime = System.currentTimeMillis();
     DownloadSystemStateMemoryRegionParams params =
         DownloadSystemStateMemoryRegionParams.newBuilder()
             .setToken(token)
@@ -322,6 +323,8 @@ public class RetrostoreClientImpl implements RetrostoreClient {
         throw new ApiException(String.format("Length received (%d) does not " +
             "match length requested (%d)", bytes.length, params.getLength()));
       }
+      long duration = System.currentTimeMillis() - startTime;
+      System.out.printf("Downloading memory region took %d ms\n", duration);
       return bytes;
     } catch (IOException e) {
       throw new ApiException("Unable to make request to server.", e);
