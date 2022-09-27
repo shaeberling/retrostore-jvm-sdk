@@ -109,10 +109,17 @@ public interface RetrostoreClient {
   /**
    * Fetches a system state associated with the given token.
    *
-   * @param token the token of the state to download. Was previously returned
-   *              when a state was uploaded
+   * @param token                      the token of the state to download.
+   *                                   Was previously returned
+   *                                   when a state was uploaded
+   * @param exclude_memory_region_Data whether to exclude sending down the
+   *                                   'data' portion of the memory regions
+   *                                   returned. This is useful for systems
+   *                                   with little memory. Use
+   *                                   `downloadSystemStateMemoryRegion`
+   *                                   instead to fetch any sized slices.
    */
-  SystemState downloadState(long token, boolean exclude_memory_regions) throws ApiException;
+  SystemState downloadState(long token, boolean exclude_memory_region_Data) throws ApiException;
 
   /**
    * Downloads a portion of a system state's memory region.

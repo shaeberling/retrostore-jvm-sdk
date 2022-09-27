@@ -191,7 +191,7 @@ message UploadSystemStateParams {
 // API Params
 message DownloadSystemStateParams {
     int64 token = 1;
-    bool exclude_memory_regions = 2;
+    bool exclude_memory_region_data = 2;
 }
 
 // API Params

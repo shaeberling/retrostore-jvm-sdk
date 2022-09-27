@@ -280,12 +280,12 @@ public class RetrostoreClientImpl implements RetrostoreClient {
 
   @Override
   public SystemState downloadState(long token,
-                                   boolean exclude_memory_regions)
+                                   boolean exclude_memory_region_data)
       throws ApiException {
     DownloadSystemStateParams params =
         DownloadSystemStateParams.newBuilder()
             .setToken(token)
-            .setExcludeMemoryRegions(exclude_memory_regions)
+            .setExcludeMemoryRegionData(exclude_memory_region_data)
             .build();
     String url = String.format(mServerUrl, "downloadState");
 

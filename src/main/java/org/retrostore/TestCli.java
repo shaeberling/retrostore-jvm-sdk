@@ -50,7 +50,7 @@ public class TestCli {
       new SortTest(),
       new FetchMediaImagesTest(),
       new UploadAndDownloadStateTest(),
-      new ExcludeMemoryRegionsDownloadSystemStateTest(),
+      new ExcludeMemoryRegionDataDownloadSystemStateTest(),
       new DownloadStateMemoryRegionsTests()
   };
 
@@ -398,7 +398,7 @@ public class TestCli {
     }
   }
 
-  static class ExcludeMemoryRegionsDownloadSystemStateTest implements RetroStoreApiTest {
+  static class ExcludeMemoryRegionDataDownloadSystemStateTest implements RetroStoreApiTest {
 
     @Override
     public boolean runTest(RetrostoreClient retrostore) throws ApiException {
@@ -412,20 +412,22 @@ public class TestCli {
         return false;
       }
 
-      // Then verify that the downloaded state has no memory regions.
-      if (!downloadState.getMemoryRegionsList().isEmpty()) {
-        System.err.println("Downloaded state should have no memory regions.");
+      // Then verify that the downloaded state has the same number of memory
+      // regions.
+      if (downloadState.getMemoryRegionsCount() !=
+          uploadState.getMemoryRegionsCount()) {
+        System.err.println("Downloaded state should have the same number of " +
+            "memory regions.");
         return false;
       }
 
-      // Make sure the rest of the object is the same
-      SystemState uploadNoMemory =
-          uploadState.toBuilder().clearMemoryRegions().build();
-      if (!uploadNoMemory.equals(downloadState)) {
-        System.err.println("Downloaded state does not match expecations");
+      // Make sure none of the regions have data
+      if (downloadState.getMemoryRegionsList()
+                       .stream()
+                       .anyMatch(r -> r.getData().size() > 0)) {
+        System.err.println("At least one memory region has data.");
         return false;
       }
-
       return true;
     }
   }
