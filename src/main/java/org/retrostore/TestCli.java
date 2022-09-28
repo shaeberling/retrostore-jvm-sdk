@@ -525,9 +525,11 @@ public class TestCli {
           new byte[]{44, 55, 66, 0, 0, 0, 0, 0, 0, 101, 102, 103}))
         return false;
 
-
-
-
+      // Request region completely inside another.
+      if (!checkMemoryEqual(7,
+          retrostore.downloadSystemStateMemoryRegion(token, 1122, 2),
+          new byte[]{103, 104}))
+        return false;
       return true;
     }
   }
