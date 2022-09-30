@@ -50,6 +50,7 @@ public class TestCli {
       new SortTest(),
       new FetchMediaImagesTest(),
       new UploadAndDownloadStateTest(),
+      new UploadBadMemoryRegionsStateTest(),
       new ExcludeMemoryRegionDataDownloadSystemStateTest(),
       new DownloadStateMemoryRegionsTests()
   };
@@ -437,7 +438,10 @@ public class TestCli {
     @Override
     public boolean runTest(RetrostoreClient retrostore) throws ApiException {
       SystemState buildState = createRandomState();
+      long startTime = System.currentTimeMillis();
       long token = retrostore.uploadState(buildState);
+      System.out.printf("Uploading state took: %d ms\n",
+          System.currentTimeMillis() - startTime);
       System.out.printf("Uploaded test state and got token '%d'\n", token);
 
       if (token <= 0) {
@@ -452,6 +456,24 @@ public class TestCli {
       }
 
       return true;
+    }
+  }
+
+  static class UploadBadMemoryRegionsStateTest implements  RetroStoreApiTest {
+
+    @Override
+    public boolean runTest(RetrostoreClient retrostore) throws ApiException {
+      SystemState.Builder state = createRandomState().toBuilder();
+      SystemState.MemoryRegion.Builder badRegion =
+          state.getMemoryRegions(0).toBuilder().setStart(-10);
+      state.addMemoryRegions(badRegion);
+      try {
+        retrostore.uploadState(state.build());
+      } catch (ApiException ex) {
+        // expected
+        return true;
+      }
+      return false;
     }
   }
 
@@ -567,10 +589,13 @@ public class TestCli {
     state.setRegisters(regs);
 
     // Add random data for memory regions.
-    int[] froms = (new Random()).ints(10).toArray();
+    int[] froms = (new Random()).ints(10, 0, 32000).map(Math::abs).toArray();
     for (int from : froms) {
       byte[] data = new byte[32000];
       (new Random()).nextBytes(data);
+      for (int i = 0; i < data.length; ++i) {
+        data[i] = (byte) Math.abs(data[i]);
+      }
       SystemState.MemoryRegion.Builder region =
           SystemState.MemoryRegion.newBuilder();
       region.setStart(from);
