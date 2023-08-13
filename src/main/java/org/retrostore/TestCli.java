@@ -23,6 +23,7 @@ import com.google.protobuf.ByteString;
 import org.retrostore.client.common.proto.App;
 import org.retrostore.client.common.proto.AppNano;
 import org.retrostore.client.common.proto.MediaImage;
+import org.retrostore.client.common.proto.MediaImageRef;
 import org.retrostore.client.common.proto.MediaType;
 import org.retrostore.client.common.proto.SystemState;
 import org.retrostore.client.common.proto.Trs80Model;
@@ -49,6 +50,7 @@ public class TestCli {
       new BasicFileTypeTest(),
       new SortTest(),
       new FetchMediaImagesTest(),
+      new FetchMediaImageRefsTest(),
       new UploadAndDownloadStateTest(),
       new UploadBadMemoryRegionsStateTest(),
       new ExcludeMemoryRegionDataDownloadSystemStateTest(),
@@ -57,7 +59,7 @@ public class TestCli {
 
   public static void main(String[] args) throws ApiException {
     RetrostoreClientImpl retrostore =
-        RetrostoreClientImpl.get("n/a", "https://retrostore.org/api/%s",
+        RetrostoreClientImpl.get("n/a", "https://20230726t050711-dot-trs-80.uc.r.appspot.com/api/%s",
             false);
     if (args.length > 1 && args[0].equalsIgnoreCase("--search")) {
       StringBuilder query = new StringBuilder();
@@ -640,6 +642,57 @@ public class TestCli {
         return false;
       }
 
+      return true;
+    }
+  }
+
+  static class FetchMediaImageRefsTest implements RetroStoreApiTest {
+
+    @Override
+    public boolean runTest(RetrostoreClient retrostore) throws ApiException {
+      String BREAKDOWN_ID = "29b20252-680f-11e8-b4a9-1f10b5491ef5";
+      // Breakdown has a "Disk" and "cmd" image.
+      List<MediaImageRef> mediaImageRefs = retrostore.fetchMediaImageRefs(BREAKDOWN_ID);
+
+      for (MediaImageRef ref : mediaImageRefs) {
+        System.out.println("Media Image Ref received: " + ref.getDataRef());
+      }
+
+      if (mediaImageRefs.size() != 2) {
+        System.err.println("'Breakdown' should have exactly two media images but got: " + mediaImageRefs.size());
+        return false;
+      }
+
+      Set<MediaType> imageTypes =
+          mediaImageRefs.stream().map(MediaImageRef::getType).collect(Collectors.toSet());
+
+      if (!imageTypes.equals(Set.of(MediaType.COMMAND, MediaType.DISK))) {
+        System.err.println("Media image types not correct.");
+        return false;
+      }
+
+      Set<String> mediaRefs =
+          mediaImageRefs.stream().map(MediaImageRef::getDataRef).collect(Collectors.toSet());
+      // FYI: In the API docs we say that these references might not live long. Currently
+      //      they do, but we might change this in the future.
+      Set<String> wantedRefs = Set.of(
+          "29b20252-680f-11e8-b4a9-1f10b5491ef5/disk_0.dsk",
+          "29b20252-680f-11e8-b4a9-1f10b5491ef5/command.CMD");
+      if (!mediaRefs.equals(wantedRefs)) {
+        System.err.println("Received referenced do not match.");
+      }
+
+
+      // Let's say we only want the CMD.
+      mediaImageRefs = retrostore.fetchMediaImageRefs(BREAKDOWN_ID, Set.of(MediaType.COMMAND));
+      if (mediaImageRefs.size() != 1) {
+        System.err.println("Requested only the CMD, but got more!");
+        return false;
+      }
+      if (mediaImageRefs.get(0).getType() != MediaType.COMMAND) {
+        System.err.println("Requested a CMD but got something else.");
+        return false;
+      }
       return true;
     }
   }
