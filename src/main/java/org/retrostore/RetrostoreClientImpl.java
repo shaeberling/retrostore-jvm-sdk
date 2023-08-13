@@ -24,16 +24,19 @@ import org.retrostore.client.common.ListAppsApiParams;
 import org.retrostore.client.common.proto.ApiResponseApps;
 import org.retrostore.client.common.proto.ApiResponseAppsNano;
 import org.retrostore.client.common.proto.ApiResponseDownloadSystemState;
+import org.retrostore.client.common.proto.ApiResponseMediaImageRefs;
 import org.retrostore.client.common.proto.ApiResponseMediaImages;
 import org.retrostore.client.common.proto.ApiResponseUploadSystemState;
 import org.retrostore.client.common.proto.App;
 import org.retrostore.client.common.proto.AppNano;
 import org.retrostore.client.common.proto.DownloadSystemStateMemoryRegionParams;
 import org.retrostore.client.common.proto.DownloadSystemStateParams;
+import org.retrostore.client.common.proto.FetchMediaImageRefsParams;
 import org.retrostore.client.common.proto.FetchMediaImagesParams;
 import org.retrostore.client.common.proto.GetAppParams;
 import org.retrostore.client.common.proto.ListAppsParams;
 import org.retrostore.client.common.proto.MediaImage;
+import org.retrostore.client.common.proto.MediaImageRef;
 import org.retrostore.client.common.proto.MediaType;
 import org.retrostore.client.common.proto.SystemState;
 import org.retrostore.client.common.proto.UploadSystemStateParams;
@@ -231,6 +234,33 @@ public class RetrostoreClientImpl implements RetrostoreClient {
     return images.stream()
         .filter(img -> img.getData().size() > 0)
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<MediaImageRef> fetchMediaImageRefs(String appId) throws ApiException {
+    return fetchMediaImageRefs(appId, new HashSet<>());
+  }
+
+  @Override
+  public List<MediaImageRef> fetchMediaImageRefs(String appId,
+                                                 Set<MediaType> types) throws ApiException {
+    String url = String.format(mServerUrl, "fetchMediaImageRefs");
+    FetchMediaImageRefsParams params = FetchMediaImageRefsParams.newBuilder()
+        .setAppId(appId)
+        .addAllMediaType(types)
+        .build();
+    try {
+      byte[] content = mUrlFetcher.fetchUrl(url, params);
+      ApiResponseMediaImageRefs apiResponse = ApiResponseMediaImageRefs.parseFrom(content);
+
+      if (!apiResponse.getSuccess()) {
+        throw new ApiException(String.format(
+            "Server reported error: '%s'", apiResponse.getMessage()));
+      }
+      return apiResponse.getMediaImageRefList();
+    } catch (IOException e) {
+      throw new ApiException("Unable to make request to server.", e);
+    }
   }
 
   /** Note: Testing legacy JSON code path for older clients. */

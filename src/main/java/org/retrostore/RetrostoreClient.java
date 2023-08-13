@@ -19,6 +19,7 @@ package org.retrostore;
 import org.retrostore.client.common.proto.App;
 import org.retrostore.client.common.proto.AppNano;
 import org.retrostore.client.common.proto.MediaImage;
+import org.retrostore.client.common.proto.MediaImageRef;
 import org.retrostore.client.common.proto.MediaType;
 import org.retrostore.client.common.proto.SystemState;
 
@@ -90,6 +91,23 @@ public interface RetrostoreClient {
    * @return A list of all the media images fetched for this app.
    */
   List<MediaImage> fetchMediaImages(String appId, Set<MediaType> types) throws ApiException;
+
+  /**
+   * Fetches the media image references for the app with the given ID.
+   *
+   * @param appId the ID of the app for which to fetch the media images.
+   * @return A list of all the media image references for this app.
+   */
+  List<MediaImageRef> fetchMediaImageRefs(String appId) throws ApiException;
+
+  /**
+   * Fetches the media image references for the app with the given ID.
+   *
+   * @param appId the ID of the app for which to fetch the media images.
+   * @param types only include images of the given types.
+   * @return A list of all the media image references for this app.
+   */
+  List<MediaImageRef> fetchMediaImageRefs(String appId, Set<MediaType> types) throws ApiException;
 
   /**
    * Uploads a new system state.
