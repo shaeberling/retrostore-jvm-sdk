@@ -32,6 +32,18 @@ message ApiResponseMediaImages {
     repeated MediaImage mediaImage = 3;
 }
 
+// Response to calls to request references for media images.
+// Note: refs are to be consumed immediately. No guarantee is
+//       given that they are valid for a long time.
+message ApiResponseMediaImageRefs {
+    // Whether the request was a success.
+    bool success = 1;
+    // An optional (error) message, human-readable.
+    string message = 2;
+    // The media images references returned by this response.
+    repeated MediaImageRef mediaImageRef = 3;
+}
+
 message ApiResponseDownloadSystemState {
     // Whether the request was a success.
     bool success = 1;
@@ -119,6 +131,20 @@ message MediaImage {
     string description = 5;
 }
 
+// A media image reference for an app.
+message MediaImageRef {
+    // The type of this media image.
+    MediaType type = 1;
+    // The file name of this media image.
+    string filename = 2;
+    // A reference to the data of this media image.
+    string data_ref = 3;
+    // When the image was uploaded.
+    int64 uploadTime = 4;
+    // An optional description of this media image describing its contents.
+    string description = 5;
+}
+
 // Types of MediaImages.
 enum MediaType {
     UNKNOWN = 0;
@@ -162,6 +188,11 @@ message SystemState {
 
 // API Params
 message FetchMediaImagesParams {
+    string app_id = 1;
+    repeated MediaType media_type = 2;
+}
+// API Params
+message FetchMediaImageRefsParams {
     string app_id = 1;
     repeated MediaType media_type = 2;
 }
