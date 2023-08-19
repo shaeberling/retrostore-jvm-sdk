@@ -140,11 +140,11 @@ message MediaImageRef {
     // A reference to the data of this media image.
     string token = 3;
     // When the image was uploaded.
-    int32 uploadTime = 4;
+    int64 uploadTime = 4;
     // An optional description of this media image describing its contents.
     string description = 5;
     // The size (in bytes) of the media image data.
-    int64 size = 6;
+    int32 size = 6;
 }
 
 // Types of MediaImages.
