@@ -110,6 +110,16 @@ public interface RetrostoreClient {
   List<MediaImageRef> fetchMediaImageRefs(String appId, Set<MediaType> types) throws ApiException;
 
   /**
+   * Downloads a portion of a media image given the ref previously acquired.
+   *
+   * @param ref    the ref acquired by called `fetchMediaImageRefs`.
+   * @param start  the start byte {inclusive} of the media image region.
+   * @param length the length (in bytes) of the media image region.
+   * @return The memory region requested.
+   */
+  byte[] fetchMediaImageRegion(MediaImageRef ref, int start, int length) throws ApiException;
+
+  /**
    * Uploads a new system state.
    *
    * @return A unique token that can be used to fetch this state later.

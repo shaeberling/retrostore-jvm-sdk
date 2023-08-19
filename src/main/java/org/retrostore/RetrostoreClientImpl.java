@@ -32,6 +32,7 @@ import org.retrostore.client.common.proto.AppNano;
 import org.retrostore.client.common.proto.DownloadSystemStateMemoryRegionParams;
 import org.retrostore.client.common.proto.DownloadSystemStateParams;
 import org.retrostore.client.common.proto.FetchMediaImageRefsParams;
+import org.retrostore.client.common.proto.FetchMediaImageRegionParams;
 import org.retrostore.client.common.proto.FetchMediaImagesParams;
 import org.retrostore.client.common.proto.GetAppParams;
 import org.retrostore.client.common.proto.ListAppsParams;
@@ -258,6 +259,33 @@ public class RetrostoreClientImpl implements RetrostoreClient {
             "Server reported error: '%s'", apiResponse.getMessage()));
       }
       return apiResponse.getMediaImageRefList();
+    } catch (IOException e) {
+      throw new ApiException("Unable to make request to server.", e);
+    }
+  }
+
+  @Override
+  public byte[] fetchMediaImageRegion(MediaImageRef ref, int start,
+                                      int length) throws ApiException {
+    long startTime = System.currentTimeMillis();
+    FetchMediaImageRegionParams params = FetchMediaImageRegionParams
+        .newBuilder()
+        .setToken(ref.getToken())
+        .setStart(start)
+        .setLength(length)
+        .build();
+
+    String url = String.format(mServerUrl, "fetchMediaImageRegion");
+
+    try {
+      byte[] bytes = mUrlFetcher.fetchUrl(url, params);
+      if (bytes.length != params.getLength()) {
+        throw new ApiException(String.format("Length received (%d) does not " +
+            "match length requested (%d)", bytes.length, params.getLength()));
+      }
+      long duration = System.currentTimeMillis() - startTime;
+      System.out.printf("Fetching media image region took %d ms\n", duration);
+      return bytes;
     } catch (IOException e) {
       throw new ApiException("Unable to make request to server.", e);
     }

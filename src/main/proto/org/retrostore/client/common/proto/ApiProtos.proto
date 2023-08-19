@@ -138,11 +138,13 @@ message MediaImageRef {
     // The file name of this media image.
     string filename = 2;
     // A reference to the data of this media image.
-    string data_ref = 3;
+    string token = 3;
     // When the image was uploaded.
-    int64 uploadTime = 4;
+    int32 uploadTime = 4;
     // An optional description of this media image describing its contents.
     string description = 5;
+    // The size (in bytes) of the media image data.
+    int64 size = 6;
 }
 
 // Types of MediaImages.
@@ -195,6 +197,13 @@ message FetchMediaImagesParams {
 message FetchMediaImageRefsParams {
     string app_id = 1;
     repeated MediaType media_type = 2;
+}
+
+// API Params
+message FetchMediaImageRegionParams {
+    string token = 1;
+    int32 start = 2;
+    int32 length = 3;
 }
 
 // API Params
