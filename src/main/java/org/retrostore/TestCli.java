@@ -31,6 +31,7 @@ import org.retrostore.client.common.proto.Trs80Model;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -51,6 +52,7 @@ public class TestCli {
       new SortTest(),
       new FetchMediaImagesTest(),
       new FetchMediaImageRefsTest(),
+      new FetchMediaImageRangeTest(),
       new UploadAndDownloadStateTest(),
       new UploadBadMemoryRegionsStateTest(),
       new ExcludeMemoryRegionDataDownloadSystemStateTest(),
@@ -59,8 +61,7 @@ public class TestCli {
 
   public static void main(String[] args) throws ApiException {
     RetrostoreClientImpl retrostore =
-        RetrostoreClientImpl.get("n/a", "https://20230726t050711-dot-trs-80.uc.r.appspot.com/api/%s",
-            false);
+        RetrostoreClientImpl.get("n/a", "https://retrostore.org/api/%s", false);
     if (args.length > 1 && args[0].equalsIgnoreCase("--search")) {
       StringBuilder query = new StringBuilder();
       for (int i = 1; i < args.length; ++i) {
@@ -76,15 +77,15 @@ public class TestCli {
       try {
         if (test.runTest(retrostore)) {
           success++;
-          System.out.println("TEST PASSED: " + test.getClass().getSimpleName());
+          System.out.println("\u001b[32mTEST PASSED: " + test.getClass().getSimpleName() + "\u001B[0m");
           System.out.println("=========================================");
         } else {
-          System.out.println("TEST FAILED: " + test.getClass().getSimpleName());
+          System.out.println("\u001B[31mTEST FAILED: " + test.getClass().getSimpleName() + "\u001B[0m");
           System.out.println("=========================================");
         }
       } catch (Exception ex) {
-        System.err.println("TEST FAILED: " + test.getClass().getSimpleName());
-        System.err.println("Exception: " + ex.getMessage());
+        System.err.println("\u001B[31mTEST FAILED: " + test.getClass().getSimpleName() + "\u001B[0m");
+        System.err.println("Exception: " + ex.getMessage() + (ex.getCause() != null ? " -> " + ex.getCause().getMessage() : ""));
         System.out.println("=========================================");
       }
     }
@@ -123,14 +124,17 @@ public class TestCli {
     }
 
     private boolean testForType(MediaType type, RetrostoreClient retrostore) throws ApiException {
-      // TODO: We should use a non-existent test model to test these without interfering with real
+      // TODO: We should use a non-existent test model to test these without
+      //  interfering with real
       // data.
       ImmutableSet<MediaType> mediaTypes = ImmutableSet.of(type);
       List<App> apps = retrostore.fetchApps(0, 50, "", mediaTypes);
       for (App app : apps) {
         System.out.printf(
-            "App %s (%s) has image of type %s.%n", app.getName(), app.getId(), type.name());
-        boolean hasImage = hasImageOfType(retrostore.fetchMediaImages(app.getId()), type);
+            "App %s (%s) has image of type %s.%n", app.getName(), app.getId()
+            , type.name());
+        boolean hasImage =
+            hasImageOfType(retrostore.fetchMediaImages(app.getId()), type);
         if (!hasImage) {
           System.err.printf(
               "App '%s' with ID %s has no image of type %s%n",
@@ -141,7 +145,8 @@ public class TestCli {
       return true;
     }
 
-    private boolean hasImageOfType(List<MediaImage> mediaImages, MediaType type) {
+    private boolean hasImageOfType(List<MediaImage> mediaImages,
+                                   MediaType type) {
       for (MediaImage mediaImage : mediaImages) {
         if (mediaImage.getType() == type) {
           return true;
@@ -175,11 +180,13 @@ public class TestCli {
           error = true;
         }
         if (item.getReleaseYear() < 1900) {
-          System.err.println("Item with ID " + item.getId() + " has bad release year");
+          System.err.println("Item with ID " + item.getId() + " has bad " +
+              "release year");
           error = true;
         }
 
-        List<MediaImage> mediaImages = retrostore.fetchMediaImages(item.getId());
+        List<MediaImage> mediaImages =
+            retrostore.fetchMediaImages(item.getId());
         for (MediaImage mediaImage : mediaImages) {
           System.out.printf(
               "- Media: %s, %s, %d%n",
@@ -225,12 +232,14 @@ public class TestCli {
           error = true;
         }
         if (item.getReleaseYear() < 1900) {
-          System.err.println("Item with ID " + item.getId() + " has bad release year");
+          System.err.println("Item with ID " + item.getId() + " has bad " +
+              "release year");
           error = true;
         }
 
 
-        List<MediaImage> mediaImages = retrostore.fetchMediaImages(item.getId());
+        List<MediaImage> mediaImages =
+            retrostore.fetchMediaImages(item.getId());
         for (MediaImage mediaImage : mediaImages) {
           System.out.printf(
               "- Media: %s, %s, %d%n",
@@ -283,8 +292,8 @@ public class TestCli {
     @Override
     public boolean runTest(RetrostoreClient retrostore) throws ApiException {
       Set<String> appNamesNoFilter = retrostore.fetchAppsNano(
-          0, 10, "ldos OR donkey",
-          Set.of(MediaType.COMMAND)).stream()
+              0, 10, "ldos OR donkey",
+              Set.of(MediaType.COMMAND)).stream()
           .map(AppNano::getName).collect(Collectors.toSet());
 
       if (!appNamesNoFilter.contains("Donkey Kong")) {
@@ -332,7 +341,8 @@ public class TestCli {
     @Override
     public boolean runTest(RetrostoreClient retrostore) throws ApiException {
       final String DANCING_DEMON_ID = "faf29c58-f05b-11e8-81f8-fbefaef24896";
-      List<MediaImage> mediaImages = retrostore.fetchMediaImages(DANCING_DEMON_ID);
+      List<MediaImage> mediaImages =
+          retrostore.fetchMediaImages(DANCING_DEMON_ID);
 
       if (mediaImages.isEmpty()) {
         System.err.println("No media images found for Dancing Demon");
@@ -355,7 +365,8 @@ public class TestCli {
       return true;
     }
 
-    private MediaImage getImageOfType(List<MediaImage> mediaImages, MediaType type) {
+    private MediaImage getImageOfType(List<MediaImage> mediaImages,
+                                      MediaType type) {
       for (MediaImage mediaImage : mediaImages) {
         if (mediaImage.getType() == type) {
           return mediaImage;
@@ -393,7 +404,8 @@ public class TestCli {
         String name2 = appNames.get(i);
         if (name1.compareTo(name2) > 0) {
           System.err.printf(
-              "Order is not correct: %s > %s\n[%s]%n", name1, name2, Joiner.on(",").join(appNames));
+              "Order is not correct: %s > %s\n[%s]%n", name1, name2,
+              Joiner.on(",").join(appNames));
           return false;
         }
       }
@@ -411,7 +423,8 @@ public class TestCli {
 
       // First lets verify that the upload state had memory regions.
       if (uploadState.getMemoryRegionsList().isEmpty()) {
-        System.err.println("Internal error: Upload state should have memory regions");
+        System.err.println("Internal error: Upload state should have memory " +
+            "regions");
         return false;
       }
 
@@ -426,8 +439,8 @@ public class TestCli {
 
       // Make sure none of the regions have data
       if (downloadState.getMemoryRegionsList()
-                       .stream()
-                       .anyMatch(r -> r.getData().size() > 0)) {
+          .stream()
+          .anyMatch(r -> r.getData().size() > 0)) {
         System.err.println("At least one memory region has data.");
         return false;
       }
@@ -461,7 +474,7 @@ public class TestCli {
     }
   }
 
-  static class UploadBadMemoryRegionsStateTest implements  RetroStoreApiTest {
+  static class UploadBadMemoryRegionsStateTest implements RetroStoreApiTest {
 
     @Override
     public boolean runTest(RetrostoreClient retrostore) throws ApiException {
@@ -618,7 +631,8 @@ public class TestCli {
       List<MediaImage> mediaImages = retrostore.fetchMediaImages(BREAKDOWN_ID);
 
       if (mediaImages.size() != 2) {
-        System.err.println("'Breakdown' should have exactly two media images but got: " + mediaImages.size());
+        System.err.println("'Breakdown' should have exactly two media images " +
+            "but got: " + mediaImages.size());
         return false;
       }
 
@@ -632,7 +646,8 @@ public class TestCli {
 
 
       // Let's say we only want the CMD.
-      mediaImages = retrostore.fetchMediaImages(BREAKDOWN_ID, Set.of(MediaType.COMMAND));
+      mediaImages = retrostore.fetchMediaImages(BREAKDOWN_ID,
+          Set.of(MediaType.COMMAND));
       if (mediaImages.size() != 1) {
         System.err.println("Requested only the CMD, but got more!");
         return false;
@@ -652,16 +667,32 @@ public class TestCli {
     public boolean runTest(RetrostoreClient retrostore) throws ApiException {
       String BREAKDOWN_ID = "29b20252-680f-11e8-b4a9-1f10b5491ef5";
       // Breakdown has a "Disk" and "cmd" image.
-      List<MediaImageRef> mediaImageRefs = retrostore.fetchMediaImageRefs(BREAKDOWN_ID);
+      List<MediaImage> mediaImages = retrostore.fetchMediaImages(BREAKDOWN_ID);
+      List<MediaImageRef> mediaImageRefs =
+          retrostore.fetchMediaImageRefs(BREAKDOWN_ID);
 
-      for (MediaImageRef ref : mediaImageRefs) {
-        System.out.println("Media Image Ref received: " + ref.getDataRef());
-      }
+      Map<String, Integer> fileSizes =
+          mediaImages.stream().collect(Collectors.toMap(MediaImage::getFilename, m -> m.getData().size()));
 
       if (mediaImageRefs.size() != 2) {
-        System.err.println("'Breakdown' should have exactly two media images but got: " + mediaImageRefs.size());
+        System.err.println("'Breakdown' should have exactly two media images " +
+            "but got: " + mediaImageRefs.size());
         return false;
       }
+
+      // Assert that the file sizes match when getting refs.
+      for (MediaImageRef ref : mediaImageRefs) {
+        boolean error = false;
+        System.out.println("Media Image Ref received: " + ref.getToken());
+        if (ref.getSize() != fileSizes.get(ref.getFilename())) {
+          System.err.println("File size for " + ref.getFilename() + " does " +
+              "not match: " + ref.getSize() + " vs " + fileSizes.get(ref.getFilename()));
+          error = true;
+        }
+        if (error)
+          return false;
+      }
+
 
       Set<MediaType> imageTypes =
           mediaImageRefs.stream().map(MediaImageRef::getType).collect(Collectors.toSet());
@@ -672,19 +703,22 @@ public class TestCli {
       }
 
       Set<String> mediaRefs =
-          mediaImageRefs.stream().map(MediaImageRef::getDataRef).collect(Collectors.toSet());
-      // FYI: In the API docs we say that these references might not live long. Currently
+          mediaImageRefs.stream().map(MediaImageRef::getToken).collect(Collectors.toSet());
+      // FYI: In the API docs we say that these references might not live
+      // long. Currently
       //      they do, but we might change this in the future.
       Set<String> wantedRefs = Set.of(
           "29b20252-680f-11e8-b4a9-1f10b5491ef5/disk_0.dsk",
           "29b20252-680f-11e8-b4a9-1f10b5491ef5/command.CMD");
       if (!mediaRefs.equals(wantedRefs)) {
         System.err.println("Received referenced do not match.");
+        return false;
       }
 
 
       // Let's say we only want the CMD.
-      mediaImageRefs = retrostore.fetchMediaImageRefs(BREAKDOWN_ID, Set.of(MediaType.COMMAND));
+      mediaImageRefs = retrostore.fetchMediaImageRefs(BREAKDOWN_ID,
+          Set.of(MediaType.COMMAND));
       if (mediaImageRefs.size() != 1) {
         System.err.println("Requested only the CMD, but got more!");
         return false;
@@ -692,6 +726,77 @@ public class TestCli {
       if (mediaImageRefs.get(0).getType() != MediaType.COMMAND) {
         System.err.println("Requested a CMD but got something else.");
         return false;
+      }
+      return true;
+    }
+  }
+
+  static class FetchMediaImageRangeTest implements RetroStoreApiTest {
+
+    @Override
+    public boolean runTest(RetrostoreClient retrostore) throws ApiException {
+      String BREAKDOWN_ID = "29b20252-680f-11e8-b4a9-1f10b5491ef5";
+      // Breakdown has a "Disk" and "cmd" image.
+      List<MediaImage> mediaImages = retrostore.fetchMediaImages(BREAKDOWN_ID);
+      List<MediaImageRef> mediaImageRefs =
+          retrostore.fetchMediaImageRefs(BREAKDOWN_ID);
+
+      if (mediaImages.isEmpty() || mediaImages.size() != mediaImageRefs.size()) {
+        System.err.println("Setup issue: Mediaimages either empty or size " +
+            "mismatch!");
+        return false;
+      }
+
+      // Get the actual and complete ground truth of the data.
+      Map<String, byte[]> mediaBytes =
+          mediaImages.stream().collect(Collectors.toMap(MediaImage::getFilename, m -> m.getData().toByteArray()));
+
+
+      // First make sure that we can fetch the whole image and it matches.
+      for (MediaImageRef ref : mediaImageRefs) {
+        System.out.println("Media Image Ref received: " + ref.getToken());
+        byte[] bytes = retrostore.fetchMediaImageRegion(ref, 0, ref.getSize());
+        System.out.println("Region received.");
+        if (!Arrays.equals(bytes, mediaBytes.get(ref.getFilename()))) {
+          System.err.println("Full region does not match for token " + ref.getToken());
+          return false;
+        }
+      }
+
+      // Test a few sub-regions
+      MediaImageRef ref = mediaImageRefs.get(0);
+      String filename = ref.getFilename();
+      byte[] truth = mediaBytes.get(filename);
+      int trueSize = truth.length;
+
+      // Start region
+      {
+        byte[] want = Arrays.copyOfRange(truth, 0, 42);
+        byte[] bytes = retrostore.fetchMediaImageRegion(ref, 0, 42);
+        if (!Arrays.equals(bytes, want)) {
+          System.err.println("Start region does no match");
+          return false;
+        }
+      }
+
+      // End region
+      {
+        byte[] want = Arrays.copyOfRange(truth, trueSize - 42, trueSize);
+        byte[] bytes = retrostore.fetchMediaImageRegion(ref, trueSize - 42, 42);
+        if (!Arrays.equals(bytes, want)) {
+          System.err.println("End region does no match");
+          return false;
+        }
+      }
+
+      // A random region in the middle.
+      {
+        byte[] want = Arrays.copyOfRange(truth, 4242, 4242 + 1234);
+        byte[] bytes = retrostore.fetchMediaImageRegion(ref, 4242, 1234);
+        if (!Arrays.equals(bytes, want)) {
+          System.err.println("End region does no match");
+          return false;
+        }
       }
       return true;
     }
