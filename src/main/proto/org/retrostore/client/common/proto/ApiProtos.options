@@ -2,6 +2,7 @@
 
 ApiResponseApps.message                 max_size:80
 ApiResponseMediaImages.message          max_size:80
+ApiResponseMediaImageRefs.message          max_size:80
 ApiResponseDownloadSystemState.message  max_size:80
 ApiResponseUploadSystemState.message    max_size:80
 
@@ -21,10 +22,17 @@ AppNano.author                          max_size:64
 
 MediaImage.filename                     max_size:30
 MediaImage.description                  max_size:128
-
 FetchMediaImagesParams.app_id           max_size:40
+FetchMediaImagesParams.media_type       max_count:5
+
+MediaImageRef.filename                  max_size:30
+MediaImageRef.description               max_size:128
+MediaImageRef.token                     max_size:100
+FetchMediaImageRefsParams.app_id        max_size:40
+FetchMediaImageRefsParams.media_type    max_count:5
+
 GetAppParams.app_id                     max_size:40
 ListAppsParams.query                    max_size:128
 ListAppsParams.Trs80Params.media_types  max_count:5
 
-FetchMediaImagesParams.media_type       max_count:5
+
