@@ -2,7 +2,7 @@
 
 ApiResponseApps.message                 max_size:80
 ApiResponseMediaImages.message          max_size:80
-ApiResponseMediaImageRefs.message          max_size:80
+ApiResponseMediaImageRefs.message       max_size:80
 ApiResponseDownloadSystemState.message  max_size:80
 ApiResponseUploadSystemState.message    max_size:80
 
@@ -24,6 +24,7 @@ MediaImage.filename                     max_size:30
 MediaImage.description                  max_size:128
 FetchMediaImagesParams.app_id           max_size:40
 FetchMediaImagesParams.media_type       max_count:5
+FetchMediaImageRegionParams.token       max_size:100
 
 MediaImageRef.filename                  max_size:30
 MediaImageRef.description               max_size:128
